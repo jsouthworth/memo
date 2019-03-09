@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"jsouthworth.net/go/dyn"
+	"jsouthworth.net/go/etm/atom"
 	"jsouthworth.net/go/hash"
 	"jsouthworth.net/go/immutable/hashmap"
 )
@@ -36,14 +37,17 @@ func (l argList) compareElements(other argList) bool {
 }
 
 func Memoize(fn interface{}) func(args ...interface{}) interface{} {
-	cache := hashmap.Empty()
+	cache := atom.New(hashmap.Empty())
 	return func(args ...interface{}) interface{} {
-		out, inCache := cache.Find(argList(args))
+		out, inCache := cache.Deref().(*hashmap.Map).
+			Find(argList(args))
 		if inCache {
 			return out
 		}
 		out = dyn.Apply(fn, args...)
-		cache = cache.Assoc(argList(args), out)
+		cache.Swap(func(m *hashmap.Map) *hashmap.Map {
+			return m.Assoc(argList(args), out)
+		})
 		return out
 	}
 }
