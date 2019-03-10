@@ -1,3 +1,4 @@
+// Package memo implements function memoization for the go programming language.
 package memo
 
 import (
@@ -36,6 +37,11 @@ func (l argList) compareElements(other argList) bool {
 	return true
 }
 
+// Memoize takes a function and returns a function that will memoize
+// the function's result based on its arguements. The memoized function
+// is safe to use concurrently. Once the function is called once with a
+// set of arguments it will never be called again with the same
+// arguments. This means that functions must be side-effect free.
 func Memoize(fn interface{}) func(args ...interface{}) interface{} {
 	cache := atom.New(hashmap.Empty())
 	return func(args ...interface{}) interface{} {
